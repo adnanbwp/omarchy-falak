@@ -9,7 +9,7 @@
 # What begin changed is recorded in $XDG_RUNTIME_DIR/falak/focus: "until <epoch>",
 # "dnd" if it turned Do Not Disturb on, and one "player <bus name>" per paused player.
 set -uo pipefail
-dir="${XDG_RUNTIME_DIR:-/tmp}/falak"
+dir="${XDG_RUNTIME_DIR:?falak-focus: XDG_RUNTIME_DIR is not set}/falak"
 marker="$dir/focus"
 mpris=/org/mpris/MediaPlayer2
 

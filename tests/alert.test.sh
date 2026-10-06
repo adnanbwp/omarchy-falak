@@ -52,6 +52,14 @@ for _ in $(seq 30); do pgrep -f "$here/fixtures/bin/pw-play" >/dev/null || break
 pgrep -f "$here/fixtures/bin/pw-play" >/dev/null && fail "stop left a player running after two tests"
 wait
 
+# A pidfile naming something that isn't a player (a reused pid) is not killed.
+mkdir -p "$work/falak"; sleep 30 & innocent=$!
+echo "$innocent" > "$work/falak/adhan.pid"
+"$alert" stop
+sleep 0.3
+kill -0 "$innocent" 2>/dev/null || fail "stop killed a non-player named in the pidfile"
+kill "$innocent"; wait "$innocent" 2>/dev/null || true
+
 # The backstop: a Falak adhan playing with no pidfile at all is still stopped.
 mkdir -p "$work/adnanbwp.falak/assets/adhans"; touch "$work/adnanbwp.falak/assets/adhans/makkah.ogg"
 # A process the kernel names pw-play (a symlink to tail, which keeps running).

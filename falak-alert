@@ -11,7 +11,8 @@
 # notification still goes to history. Clicking it stops the sound.
 set -uo pipefail
 
-dir="${XDG_RUNTIME_DIR:-/tmp}/falak"
+# Per-user runtime dir only: a shared /tmp would let another user plant the pidfile.
+dir="${XDG_RUNTIME_DIR:?falak-alert: XDG_RUNTIME_DIR is not set}/falak"
 pidfile="$dir/adhan.pid"
 self=$(realpath "$0")
 
@@ -23,7 +24,9 @@ vol() { awk -v v="${1:-80}" 'BEGIN { printf "%.2f", (v < 0 ? 0 : v > 100 ? 100 :
 
 case "${1:-}" in
 stop)
-  [[ -f $pidfile ]] && kill "$(cat "$pidfile")" 2>/dev/null
+  # Only if that pid is still a player: pids are reused.
+  pid=$(cat "$pidfile" 2>/dev/null)
+  [[ $pid =~ ^[0-9]+$ ]] && tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -qE '(^|/)pw-play ' && kill "$pid" 2>/dev/null
   rm -f "$pidfile"
   # Backstop: whatever else is playing one of Falak's adhans (bundled or yours),
   # so a lost pidfile can never leave one that cannot be stopped.
