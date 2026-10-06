@@ -64,7 +64,7 @@ find "$dir/fired" -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf {} + 2>
 omarchy-hook falak-prayer "$key" "$headline" "$body" >/dev/null 2>&1 &
 
 quiet=""
-[[ $(omarchy-shell -q notifications isDnd 2>/dev/null) == on ]] && quiet="Do Not Disturb is on"
+[[ $(omarchy-shell notifications isDnd 2>/dev/null) == on ]] && quiet="Do Not Disturb is on"
 pgrep -f '^gpu-screen-recorder' >/dev/null 2>&1 && quiet="a screen recording is running"
 
 if [[ -n $sound && -z $quiet && -f $sound ]]; then

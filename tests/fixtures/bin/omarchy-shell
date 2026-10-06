@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Stand-in shell IPC: Do Not Disturb in $FALAK_TEST_DIR/dnd (or $FALAK_TEST_DND for alerts).
+# Like the real one, -q prints nothing: a state read with -q comes back empty.
 f="${FALAK_TEST_DIR:-/nonexistent}/dnd"
+quiet=false; [[ ${1:-} == -q ]] && { quiet=true; shift; }
+say() { $quiet || echo "$1"; }
 case "$*" in
-  *isDnd*|*dndState*) [[ -f $f ]] && cat "$f" || echo "${FALAK_TEST_DND:-off}" ;;
-  *"setDnd on"*) echo on > "$f"; echo on ;;
-  *"setDnd off"*) echo off > "$f"; echo off ;;
+  *isDnd*|*dndState*) say "$([[ -f $f ]] && cat "$f" || echo "${FALAK_TEST_DND:-off}")" ;;
+  *"setDnd on"*) echo on > "$f"; say on ;;
+  *"setDnd off"*) echo off > "$f"; say off ;;
 esac

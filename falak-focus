@@ -26,7 +26,7 @@ player() { gdbus call --session --dest "$1" --object-path $mpris --method "org.m
 end() {
   [[ -f $marker ]] || return 0
   mv "$marker" "$marker.ending" 2>/dev/null || return 0      # one restorer only
-  grep -q '^dnd$' "$marker.ending" && [[ $(omarchy-shell -q notifications dndState 2>/dev/null) == on ]] &&
+  grep -q '^dnd$' "$marker.ending" && [[ $(omarchy-shell notifications dndState 2>/dev/null) == on ]] &&
     omarchy-shell -q notifications setDnd off >/dev/null
   grep '^player ' "$marker.ending" | while read -r _ name; do player "$name" Play; done
   rm -f "$marker.ending"
@@ -41,7 +41,7 @@ begin)
   until=$(( $(date +%s) + minutes * 60 ))
   {
     echo "until $until"
-    if [[ $(omarchy-shell -q notifications dndState 2>/dev/null) != on ]]; then
+    if [[ $(omarchy-shell notifications dndState 2>/dev/null) != on ]]; then
       omarchy-shell -q notifications setDnd on >/dev/null && echo dnd
     fi
     for p in $(players); do

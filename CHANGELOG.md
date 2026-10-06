@@ -4,6 +4,8 @@
 
 ## 2.1.0 (2026-10-06)
 
+- Do Not Disturb works with Falak: the adhan stays silent while it is on, and prayer focus turns it back off when it ends. Both read the state with `omarchy-shell -q`, which prints nothing, so neither ever saw it.
+
 - Where on Earth each eclipse is seen: in `e`, pick one with ↑/↓ and a world map shows the partial zone by depth and the path of totality (or the annular ring) at its true width. For a lunar eclipse it shows where the moon is up.
 - Solar eclipses are named by their own type, so a total eclipse seen elsewhere no longer reads "partial".
 - The Moonsighting Committee method now uses its seasonal rule: Fajr and Isha are a number of minutes from sunrise and sunset that changes with latitude and season.
