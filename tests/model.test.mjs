@@ -391,6 +391,7 @@ assert.equal(model.alertSettings({}).dua, true)
 assert.equal(model.alertSettings({ dua: false }).dua, false)
 assert.match(model.DUA_AFTER_ADHAN.arabic, /^اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ/)
 assert.equal(model.DUA_AFTER_ADHAN.source, "Sahih al-Bukhari 614")
+assert.equal(model.DUA_AFTER_ADHAN.englishHead + " " + model.DUA_AFTER_ADHAN.englishTail, model.DUA_AFTER_ADHAN.english, "the notification's English is the whole English")
 
 // The eclipse alert: the 3 March 2026 total lunar eclipse, seen from Melbourne.
 const mar3 = model.lunarEclipseAt(model.fullMoonNear(Date.UTC(2026, 2, 3, 12)), LAT, LON)
