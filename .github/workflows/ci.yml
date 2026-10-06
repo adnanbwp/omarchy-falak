@@ -1,0 +1,22 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Omarchy's own manifest check, pinned so an upstream change can't break CI silently.
+      - name: omarchy plugin validate
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/omacom/omarchy/81145eb1fd41532fcae4310b26f860608e2eaf82/bin/omarchy-plugin-validate -o /tmp/omarchy-plugin-validate
+          bash /tmp/omarchy-plugin-validate .
+      - name: Tests (astronomy, methods, alerts, focus)
+        run: tests/run

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Omarchy itself (bar, shell, install)
+    url: https://github.com/omacom/omarchy/issues
+    about: If the problem isn't Falak's, Omarchy's tracker is the place.

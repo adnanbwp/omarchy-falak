@@ -1,0 +1,9 @@
+{
+  "_source": "Official timetables, fetched 2026-10-06: JAKIM e-solat.gov.my (esolatApi TakwimSolat, zone WLY01) and Diyanet namazvakitleri.diyanet.gov.tr (Istanbul, city id 9541). Times as published (HH:MM).",
+  "places": [
+    { "name": "Kuala Lumpur (JAKIM WLY01)", "method": "JAKIM", "lat": 3.139, "lon": 101.687, "tz": "Asia/Kuala_Lumpur", "date": "2026-10-06",
+      "timings": { "fajr": "05:52", "sunrise": "06:58", "dhuhr": "13:04", "asr": "16:17", "maghrib": "19:05", "isha": "20:14" } },
+    { "name": "Istanbul (Diyanet 9541)", "method": "Turkey", "lat": 41.01, "lon": 28.97, "tz": "Europe/Istanbul", "date": "2026-10-06",
+      "timings": { "fajr": "05:34", "sunrise": "06:59", "dhuhr": "12:57", "asr": "16:10", "maghrib": "18:46", "isha": "20:05" } }
+  ]
+}

@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# Run FalakPanel.qml (the wrapper: settings, location, places, pill) headless,
+# with its layer-shell KeyboardPanel swapped for a plain Item, and print what it
+# resolved. dev/render covers the view; this covers the wiring around it.
+#   dev/check-panel ['{"method":"auto","asr":"auto"}']
+set -euo pipefail
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+settings=${1:-'{"method":"auto","asr":"auto"}'}
+cfg=$(mktemp -d)
+# Everything this check starts carries FALAK_CHECK=$cfg; on exit, end any of
+# it still running (a headless quickshell can outlive its launcher's timeout).
+cleanup() {
+  for pid in $(pgrep -u "$(id -u)"); do
+    { tr '\0' '\n' < "/proc/$pid/environ" | grep -qx "FALAK_CHECK=$cfg" && kill "$pid"; } 2>/dev/null
+  done
+  rm -rf "$cfg"
+}
+trap cleanup EXIT
+ln -s "${OMARCHY_PATH:-/usr/share/omarchy}/shell/Commons" "$cfg/Commons"
+ln -s "${OMARCHY_PATH:-/usr/share/omarchy}/shell/Ui" "$cfg/Ui"
+rsync -a --exclude .git "$here/../" "$cfg/plugin/"
+# No layer shell headless: the sky's full-screen window becomes a plain Item.
+cat > "$cfg/plugin/SkyWindow.qml" <<'QML'
+import QtQuick
+Item { property bool shown: false; property var screen; property alias view: skyView; SkyView { id: skyView } }
+QML
+# Never announce or play anything from a check.
+# The stand-in records how it was called, so the wiring is checked.
+printf '#!/bin/sh\necho "$*" >> "%s/alert.log"\n' "$cfg" > "$cfg/plugin/falak-alert"
+printf '#!/bin/sh\necho "focus $*" >> "%s/alert.log"\n' "$cfg" > "$cfg/plugin/falak-focus"
+python3 - "$cfg/plugin/FalakPanel.qml" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+stub = """  Item {
+    property var anchorItem; property var owner; property var bar; property bool open
+    property bool centerOnBar; property var focusTarget; property int contentWidth; property int contentHeight
+    function fittedContentWidth(w) { return w } function fittedContentHeight(h) { return h }
+    width: contentWidth; height: contentHeight"""
+assert "  KeyboardPanel {" in s
+s = s.replace("  KeyboardPanel {", stub, 1)
+# Never touch the real settings from a check.
+assert s.count('["omarchy-bar", "set"') >= 2
+s = s.replace('["omarchy-bar", "set"', '["true", "omarchy-bar"')
+s = s.replace('"falak-journal", journalPath', '"falak-journal", "/dev/null/never"')
+open(p, "w").write(s)
+PY
+cat > "$cfg/shell.qml" <<QML
+import QtQuick
+import QtTest
+import Quickshell
+import "plugin"
+ShellRoot {
+  FloatingWindow {
+    id: win
+    implicitWidth: 700; implicitHeight: 900
+    FalakPanel { id: p; settings: ($settings) }
+    Item { id: probe }
+    // Real key presses (QtTest), through Qt's own delivery to whatever has focus.
+    TestCase { id: keys; name: "keys"; when: false }
+    function focused() { var f = probe.Window.activeFocusItem; return f ? (f.objectName || String(f).split("(")[0]) : "none" }
+    // Focus: the place search takes the keyboard, and hands it back on a pick.
+    property var steps: []
+    Timer { interval: 1500; running: true; onTriggered: { p.panelView.startSearch("lah") } }
+    Timer { interval: 2000; running: true; onTriggered: { win.steps.push("searching:" + win.focused()); p.panelView.pick(p.panelView.results[0]); p.testAlert() } }
+    Timer { interval: 2600; running: true; onTriggered: {
+      win.steps.push("after pick:" + win.focused())
+      // Reported: after picking a place, "n" was typed into the search.
+      keys.keyClick(Qt.Key_N)
+      win.steps.push("n opens the crescent:" + p.panelView.crescentOpen + ",searching:" + p.panelView.searching)
+      keys.keyClick(Qt.Key_Escape)
+      // Reported: Enter in the calendar must open the chosen day.
+      keys.keyClick(Qt.Key_C); keys.keyClick(Qt.Key_Right); keys.keyClick(Qt.Key_Right); keys.keyClick(Qt.Key_Return)
+      win.steps.push("calendar enter:" + (!p.panelView.calendarOpen && p.panelView.dayOffset === 2))
+      keys.keyClick(Qt.Key_R)
+      win.steps.push("journal off by default:" + (p.panelView.journalOpen && !p.panelView.journalOn))
+      keys.keyClick(Qt.Key_Escape)
+      // Reported: the tour stuck on 3 of 5. Lose the keyboard there, then
+      // a click on the view must hand it back and the tour go on to the end.
+      keys.keyClick(Qt.Key_W); keys.keyClick(Qt.Key_Right); keys.keyClick(Qt.Key_Right)
+      probe.forceActiveFocus(); keys.keyClick(Qt.Key_Right)
+      var lost = p.panelView.teachStep === 2
+      keys.mouseClick(p.panelView, 300, 200)
+      for (var i = 0; i < 3; i++) keys.keyClick(Qt.Key_Right)
+      win.steps.push("teach:" + (lost && p.panelView.teachOpen && p.panelView.teachStep === 4))
+      keys.keyClick(Qt.Key_Escape)
+      keys.keyClick(Qt.Key_O); keys.keyClick(Qt.Key_Down); keys.keyClick(Qt.Key_Right); keys.keyClick(Qt.Key_Right)
+      win.steps.push("adjust:" + (p.panelView.adjustOpen && p.opts.offsets && p.opts.offsets.fajr === 2))
+      keys.keyClick(Qt.Key_Escape)
+      keys.keyClick(Qt.Key_D); keys.keyClick(Qt.Key_Space); keys.keyClick(Qt.Key_Space)
+      win.steps.push("tasbih:" + (p.panelView.tasbihOpen && p.panelView.tasbihCount === 2))
+      keys.keyClick(Qt.Key_Escape)
+      keys.keyClick(Qt.Key_Question)
+      win.steps.push("help:" + p.panelView.helpOpen)
+      keys.keyClick(Qt.Key_Escape)
+      keys.keyClick(Qt.Key_S)
+      win.steps.push("sky:" + p.skyOpen)
+      keys.keyClick(Qt.Key_Escape)
+      win.steps.push("sky closed:" + !p.skyOpen)
+      p.openFromHotkey(); p.panelView.forceActiveFocus()
+      keys.keyClick(Qt.Key_E); keys.keyClick(Qt.Key_Down)
+      var listed = p.panelView.eclipsesOpen && p.panelView.eclipses.length > 0 && p.panelView.eclipseIndex === 1 && !!p.panelView.eclipseMap
+      keys.keyClick(Qt.Key_Escape)
+      win.steps.push("eclipses:" + (listed && !p.panelView.eclipsesOpen))
+      // Report and quit from here, after the keys, and only once this handler
+      // has returned: keyClick runs events, so a separate quit timer could
+      // fire inside this handler and abort the shell (it did, 2026-10-06).
+      console.log("falak-panel", JSON.stringify({ label: p.label, alerts: p.alerts.enabled,
+        nextAlert: p.nextAlert ? p.nextAlert.key + " at " + new Date(p.nextAlert.time).toTimeString().slice(0, 5) : null, location: p.location && p.location.name, country: p.country,
+        method: p.opts.method, asr: p.opts.asr, lang: p.opts.lang, places: !!p.cities,
+        zone: p.zone ? p.zone.name + " " + p.zone.changes.length + " changes" : null, focus: win.steps }))
+      Qt.callLater(Qt.quit)
+    } }
+  }
+}
+QML
+# To a file, not a pipe: a leftover process holding a pipe would block the read.
+env -u WAYLAND_DISPLAY -u DISPLAY -u HYPRLAND_INSTANCE_SIGNATURE \
+  QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_BACKEND=software FALAK_CHECK="$cfg" \
+  timeout 30 qs -n -p "$cfg" > "$cfg/qs.log" 2>&1 || true
+log=$(cat "$cfg/qs.log")
+grep -E 'WARN|ERROR|falak-panel' <<<"$log" | grep -v -E 'window masks|portal' || true
+grep -q 'falak-panel' <<<"$log"
+# "Test now" reaches falak-alert with a real adhan file and the volume.
+grep -E '^fire test-[0-9]+ Falak test .* /.*/assets/adhans/[a-z-]+\.ogg [0-9]+$' "$cfg/alert.log" >/dev/null \
+  || { echo "FAIL: test alert did not reach falak-alert as expected:" >&2; cat "$cfg/alert.log" >&2; exit 1; }
+f=$(grep -oE '/[^ ]+/assets/adhans/[a-z-]+\.ogg' "$cfg/alert.log" | head -1); [[ -f $f ]] || { echo "FAIL: no such adhan file $f" >&2; exit 1; }
+for want in '"n opens the crescent:true,searching:false"' '"calendar enter:true"' '"journal off by default:true"' '"teach:true"' '"adjust:true"' '"tasbih:true"' '"help:true"' '"sky:true"' '"sky closed:true"' '"eclipses:true"'; do
+  grep -q "$want" <<<"$log" || { echo "FAIL: key path, wanted $want" >&2; grep falak-panel <<<"$log" >&2; exit 1; }
+done
+# A shell start runs the focus restore check (Do Not Disturb never stuck on).
+grep -q '^focus check$' "$cfg/alert.log" || { echo "FAIL: the panel did not run falak-focus check on load" >&2; exit 1; }
+# Reported 2026-10-06: after picking a place the hidden field kept the keyboard.
+grep -q '"after pick:falakKeys"' <<<"$log" || { echo "FAIL: keyboard focus did not return to the panel after a pick" >&2; exit 1; }

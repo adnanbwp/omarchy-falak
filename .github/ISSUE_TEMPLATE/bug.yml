@@ -1,0 +1,38 @@
+name: Something else is broken
+description: A key does nothing, the panel looks wrong, an alert misbehaves.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+      description: The keys you pressed, in order, help a lot. A screenshot of the panel too.
+    validations:
+      required: true
+  - type: checkboxes
+    id: updated
+    attributes:
+      label: Up to date
+      options:
+        - label: I ran `omarchy plugin update adnanbwp.falak` and it still happens.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Falak version
+      description: "Run: jq -r .version ~/.config/omarchy/plugins/adnanbwp.falak/manifest.json"
+    validations:
+      required: true
+  - type: input
+    id: omarchy
+    attributes:
+      label: Omarchy version
+      description: "Run: omarchy version"
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Shell log lines that mention Falak (optional)
+      description: "Run: grep -i falak /run/user/$(id -u)/quickshell/by-pid/*/log.log | tail -20"
+      render: text

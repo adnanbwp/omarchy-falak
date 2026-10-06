@@ -1,0 +1,51 @@
+name: A prayer time looks wrong
+description: Falak's time doesn't match your mosque, timetable or another app.
+labels: ["prayer-times"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please name a city or region, never your street address or exact coordinates. Falak's times are only as precise as a city anyway.
+  - type: input
+    id: place
+    attributes:
+      label: City or region
+      placeholder: Birmingham, UK
+    validations:
+      required: true
+  - type: input
+    id: date
+    attributes:
+      label: Date
+      placeholder: 2027-02-21
+    validations:
+      required: true
+  - type: textarea
+    id: compare
+    attributes:
+      label: Which prayer, what Falak shows, and what you expected
+      placeholder: |
+        Isha: Falak 19:42, my mosque 20:05
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Where the expected time comes from
+      description: Your mosque's timetable, a website or another app. A link helps.
+    validations:
+      required: true
+  - type: input
+    id: method
+    attributes:
+      label: Method and Asr school shown at the bottom of the panel
+      placeholder: Muslim World League · standard Asr
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Falak version
+      description: "Run: jq -r .version ~/.config/omarchy/plugins/adnanbwp.falak/manifest.json"
+    validations:
+      required: true

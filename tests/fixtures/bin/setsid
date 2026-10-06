@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Stand-in: record the restore timer instead of leaving a real one running.
+echo "setsid $*" >> "$FALAK_TEST_LOG"

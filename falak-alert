@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Falak's one moving part: announce a prayer, once, and maybe play the adhan.
+#
+#   falak-alert fire <key> <headline> <body> [sound-file] [volume 0-100]
+#   falak-alert preview <sound-file> [volume]    first 8 seconds, from the settings
+#   falak-alert stop
+#
+# Two bars mean two Falak instances scheduling the same moment; the first to
+# create $XDG_RUNTIME_DIR/falak/fired/<key> wins and the other exits. No sound
+# while Omarchy's Do Not Disturb is on or a screen recording is running; the
+# notification still goes to history. Clicking it stops the sound.
+set -uo pipefail
+
+dir="${XDG_RUNTIME_DIR:-/tmp}/falak"
+pidfile="$dir/adhan.pid"
+self=$(realpath "$0")
+
+# Remove the pidfile only if it is still ours: a newer alert may have replaced
+# our player (and its pidfile) while ours was winding down.
+forget() { [[ $(cat "$pidfile" 2>/dev/null) == "$1" ]] && rm -f "$pidfile"; return 0; }
+
+vol() { awk -v v="${1:-80}" 'BEGIN { printf "%.2f", (v < 0 ? 0 : v > 100 ? 100 : v) / 100 }'; }
+
+case "${1:-}" in
+stop)
+  [[ -f $pidfile ]] && kill "$(cat "$pidfile")" 2>/dev/null
+  rm -f "$pidfile"
+  # Backstop: whatever else is playing one of Falak's adhans (bundled or yours),
+  # so a lost pidfile can never leave one that cannot be stopped.
+  # Only processes that are pw-play: a bare `pkill -f` also matched any
+  # command line that merely mentioned such a path (it killed a test's shell).
+  for comm in /proc/[0-9]*/comm; do
+    [[ $(cat "$comm" 2>/dev/null) == pw-play ]] || continue
+    pid=${comm#/proc/}; pid=${pid%/comm}
+    tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null \
+      | grep -qE '/[^/ ]*falak[^/ ]*/assets/adhans/|/\.local/share/falak/adhans/' && kill "$pid" 2>/dev/null
+  done
+  exit 0
+  ;;
+preview)
+  [[ -f ${2:-} ]] || exit 1
+  mkdir -p "$dir"
+  "$self" stop
+  timeout 8 pw-play --volume "$(vol "${3:-80}")" "$2" &
+  player=$!
+  echo $player > "$pidfile"
+  wait $player
+  forget $player
+  exit 0
+  ;;
+fire) ;;
+*) echo "usage: falak-alert fire <key> <headline> <body> [sound] [volume] | preview <sound> [volume] | stop" >&2; exit 2 ;;
+esac
+
+key=${2:?key}; headline=${3:?headline}; body=${4:-}; sound=${5:-}; volume=${6:-80}
+[[ $key =~ ^[A-Za-z0-9._-]+$ ]] || { echo "bad key: $key" >&2; exit 2; }
+
+mkdir -p "$dir/fired"
+mkdir "$dir/fired/$key" 2>/dev/null || exit 0          # someone already fired it
+# Keep a week of markers.
+find "$dir/fired" -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf {} + 2>/dev/null
+
+# Your own scripts: omarchy hook install falak-prayer <script> (args: key, headline, body).
+omarchy-hook falak-prayer "$key" "$headline" "$body" >/dev/null 2>&1 &
+
+quiet=""
+[[ $(omarchy-shell -q notifications isDnd 2>/dev/null) == on ]] && quiet="Do Not Disturb is on"
+pgrep -f '^gpu-screen-recorder' >/dev/null 2>&1 && quiet="a screen recording is running"
+
+if [[ -n $sound && -z $quiet && -f $sound ]]; then
+  omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$headline" "${body:+$body · }click to stop the adhan" --exec "$self" stop >/dev/null 2>&1 &
+  "$self" stop
+  pw-play --volume "$(vol "$volume")" "$sound" &
+  player=$!
+  echo $player > "$pidfile"
+  wait $player
+  forget $player
+else
+  omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$headline" "$body${quiet:+ (silent: $quiet)}" >/dev/null 2>&1
+fi

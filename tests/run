@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Every Falak check that needs no running shell.
+set -euo pipefail
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+TZ=Australia/Melbourne node "$here/model.test.mjs"
+TZ=Europe/Oslo node "$here/highlat.test.mjs"
+"$here/alert.test.sh"
+"$here/focus.test.sh"

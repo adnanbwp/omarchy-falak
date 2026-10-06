@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+"""Build plugin/assets/sky.json for the sky dome from d3-celestial's data
+(BSD 3-clause, © 2015 Olaf Frohn; https://github.com/ofrohn/d3-celestial).
+
+    dev/build-sky <dir with stars.6.json, starnames.json, constellations.lines.json, planets.json>
+
+stars: [ra, dec, mag, b−v] (J2000 degrees), magnitude 5.0 and brighter.
+names: {index into stars: [English, Arabic]} for named stars of magnitude 2.6
+and brighter. lines: constellation figures as [[ra, dec], ...]. planets:
+JPL's approximate Keplerian elements (1800-2050), "ter" being the Earth-Moon
+barycentre.
+"""
+import json, os, sys
+
+src = sys.argv[1]
+load = lambda n: json.load(open(os.path.join(src, n), encoding="utf8"))
+stars_in, names_in = load("stars.6.json")["features"], load("starnames.json")
+ra = lambda lon: round(lon % 360, 3)
+
+stars, names = [], {}
+for f in sorted(stars_in, key=lambda f: f["properties"]["mag"]):
+    mag = f["properties"]["mag"]
+    if mag > 5.0:
+        continue
+    lon, lat = f["geometry"]["coordinates"]
+    try:
+        bv = round(float(f["properties"].get("bv") or 0), 2)
+    except ValueError:
+        bv = 0
+    n = names_in.get(str(f["id"]), {})
+    if mag <= 2.6 and n.get("name"):
+        names[len(stars)] = [n["name"], n.get("ar", "").replace("‎", "").strip()]
+    stars.append([ra(lon), round(lat, 3), mag, bv])
+
+lines = []
+for c in load("constellations.lines.json")["features"]:
+    for line in c["geometry"]["coordinates"]:
+        lines.append([[ra(p[0]), round(p[1], 3)] for p in line])
+
+planets_in = load("planets.json")
+planets = {k: dict(planets_in[k]["elements"][0], name=planets_in[k]["name"])
+           for k in ["mer", "ven", "ter", "mar", "jup", "sat", "ura", "nep"]}
+
+out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "sky.json")
+json.dump({"stars": stars, "names": names, "lines": lines, "planets": planets},
+          open(out, "w", encoding="utf8"), ensure_ascii=False, separators=(",", ":"))
+print(len(stars), "stars,", len(names), "named,", len(lines), "lines")

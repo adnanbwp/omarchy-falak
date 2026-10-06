@@ -1,0 +1,6 @@
+{"_source":"api.aladhan.com/v1/timings with timezonestring=<tz>, public city coordinates, fetched 2026-10-06","places":[
+{"name":"Makkah","lat":21.427,"lon":39.826,"tz":"Asia/Riyadh","method":4,"school":0,"date":"06-10-2026","timings":{"Fajr":"04:57","Sunrise":"06:13","Dhuhr":"12:09","Asr":"15:32","Maghrib":"18:04","Isha":"19:34"}}
+,{"name":"Istanbul","lat":41.01,"lon":28.97,"tz":"Europe/Istanbul","method":13,"school":1,"date":"06-10-2026","timings":{"Fajr":"05:34","Sunrise":"06:59","Dhuhr":"12:57","Asr":"16:58","Maghrib":"18:45","Isha":"20:04"}}
+,{"name":"St. John's","lat":47.565,"lon":-52.71,"tz":"America/St_Johns","method":2,"school":0,"date":"06-10-2026","timings":{"Fajr":"05:42","Sunrise":"07:07","Dhuhr":"12:49","Asr":"15:56","Maghrib":"18:30","Isha":"19:54"}}
+,{"name":"St. John's winter","lat":47.565,"lon":-52.71,"tz":"America/St_Johns","method":2,"school":0,"date":"15-01-2027","timings":{"Fajr":"06:13","Sunrise":"07:44","Dhuhr":"12:10","Asr":"14:15","Maghrib":"16:37","Isha":"18:08"}}
+]}

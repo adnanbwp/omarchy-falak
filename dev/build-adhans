@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Transcode the extension's adhan recordings into plugin/assets/adhans (Opus).
+#
+#   dev/build-adhans <the extension's adhans/ directory>
+#
+# Keep each file's own channel layout. Never downmix to mono: in Mishary
+# Alafasy's adhan (file 7) the channels are nearly opposite in phase (L−R is
+# 13 dB louder than L+R), so a mono mix cancels the voice and leaves the
+# reverb. That was the "a lot of echo" reported on 2026-10-06.
+set -euo pipefail
+src=${1:?usage: dev/build-adhans <extension adhans dir>}
+out=$(cd "$(dirname "${BASH_SOURCE[0]}")/../assets/adhans" && pwd)
+for pair in 5:makkah 14:madinah 6:al-aqsa 7:mishary 13:fajr-ali-mulla 15:fajr-madinah 11:fajr-mishary; do
+  id=${pair%%:*} name=${pair#*:}
+  channels=$(ffprobe -v error -select_streams a:0 -show_entries stream=channels -of csv=p=0 "$src/$id.mp3")
+  rate=$([[ $channels == 1 ]] && echo 48k || echo 80k)
+  ffmpeg -loglevel error -y -i "$src/$id.mp3" -c:a libopus -b:a "$rate" "$out/$name.ogg"
+  echo "$name: $channels channel(s), $rate"
+done

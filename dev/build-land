@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Build plugin/assets/land.json: a 2° land mask for the crescent map.
+
+    dev/build-land <Natural Earth countries GeoJSON>
+
+Any Natural Earth admin-0 GeoJSON works (public domain); the Radio Atlas plugin
+ships one at ~/.config/omarchy/plugins/akshar.radio-atlas/assets/countries.json.
+Rows run north to south, "1" for land at the cell's centre.
+"""
+import json, os, sys
+
+STEP = 2
+features = json.load(open(sys.argv[1]))["features"]
+rings = []
+for f in features:
+    g = f["geometry"]
+    polys = g["coordinates"] if g["type"] == "MultiPolygon" else [g["coordinates"]]
+    for poly in polys:
+        ring = poly[0]
+        xs = [p[0] for p in ring]; ys = [p[1] for p in ring]
+        rings.append((min(xs), max(xs), min(ys), max(ys), ring))
+
+def inside(x, y, ring):
+    hit, j = False, len(ring) - 1
+    for i in range(len(ring)):
+        xi, yi = ring[i]; xj, yj = ring[j]
+        if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi) + xi:
+            hit = not hit
+        j = i
+    return hit
+
+rows = []
+lat = 90 - STEP / 2
+while lat > -90:
+    row, lon = "", -180 + STEP / 2
+    while lon < 180:
+        land = any(a <= lon <= b and c <= lat <= d and inside(lon, lat, r) for a, b, c, d, r in rings)
+        row += "1" if land else "0"
+        lon += STEP
+    rows.append(row)
+    lat -= STEP
+
+out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "land.json")
+json.dump({"step": STEP, "rows": rows}, open(out, "w"), separators=(",", ":"))
+print(len(rows), "rows,", sum(r.count("1") for r in rows), "land cells")

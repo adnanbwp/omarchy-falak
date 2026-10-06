@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Stand-in session bus: two players; state in $FALAK_TEST_DIR/players/<name>.
+echo "gdbus $*" >> "$FALAK_TEST_LOG"
+d="$FALAK_TEST_DIR/players"
+case "$*" in
+  *ListNames*) printf "(['org.freedesktop.DBus', 'org.mpris.MediaPlayer2.spotify', 'org.mpris.MediaPlayer2.chromium.instance42'],)\n" ;;
+  *PlaybackStatus*) name=$(sed -E 's/.*--dest ([^ ]+).*/\1/' <<<"$*"); echo "(<'$(cat "$d/$name" 2>/dev/null || echo Stopped)'>,)" ;;
+  *Player.Pause*) name=$(sed -E 's/.*--dest ([^ ]+).*/\1/' <<<"$*"); echo Paused > "$d/$name" ;;
+  *Player.Play*) name=$(sed -E 's/.*--dest ([^ ]+).*/\1/' <<<"$*"); echo Playing > "$d/$name" ;;
+esac

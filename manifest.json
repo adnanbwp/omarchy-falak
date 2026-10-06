@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "adnanbwp.falak",
+  "name": "Falak",
+  "version": "2.1.0",
+  "author": "Adnan Ali",
+  "license": "MIT",
+  "description": "Prayer times, qibla, moon, Ramadan and the hijri date, computed on this machine from the sun and moon, for anywhere in the world. No network.",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "BarWidget.qml"
+  },
+  "barWidget": {
+    "displayName": "Falak",
+    "description": "Next prayer and a sky panel: the sun's path, the moon, the qibla",
+    "category": "Info",
+    "allowMultiple": false,
+    "defaultSection": "center",
+    "defaults": {
+      "method": "auto",
+      "asr": "auto",
+      "hijriOffset": 0,
+      "highLatitude": "angle",
+      "language": "auto",
+      "numerals": "auto"
+    },
+    "schema": [
+      {
+        "key": "method",
+        "type": "string",
+        "label": "Method: auto (by country), or one of the 26 in the panel's picker (m)"
+      },
+      {
+        "key": "asr",
+        "type": "string",
+        "label": "Asr: auto (by country), hanafi or standard"
+      },
+      {
+        "key": "hijriOffset",
+        "type": "number",
+        "label": "Hijri offset in days (local sighting)"
+      },
+      {
+        "key": "highLatitude",
+        "type": "string",
+        "label": "High-latitude rule: angle, seventh, middle or none"
+      },
+      {
+        "key": "location",
+        "type": "object",
+        "label": "Place chosen in the panel; absent follows the weather widget"
+      },
+      {
+        "key": "language",
+        "type": "string",
+        "label": "Language: auto (system), en, ar, ur, fa, tr, ms, id, fr, bn"
+      },
+      {
+        "key": "numerals",
+        "type": "string",
+        "label": "Numerals: auto (native for Arabic and Persian), native or western"
+      }
+    ]
+  }
+}

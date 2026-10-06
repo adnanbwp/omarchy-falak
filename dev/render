@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Render Falak's panel headless to a PNG, without touching the running shell.
+#
+#   dev/render out.png ['{"now":"2027-03-01T19:30:00+11:00","tz":"Australia/Melbourne",
+#                        "location":{...},"opts":{...},"dayOffset":0,"hover":0.5}']
+#
+# A throwaway Quickshell with Qt's offscreen platform: no Wayland, no
+# Hyprland, no bar reload. It uses Omarchy's real Commons/Ui (theme colours,
+# fonts, spacing) from /usr/share/omarchy/shell, read-only.
+set -euo pipefail
+
+here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+out=$(realpath -m "${1:?usage: dev/render out.png [scenario-json]}")
+scenario=${2:-'{}'}
+# "tz" in the scenario renders in that city's local time.
+tz=$(jq -r '.tz // empty' <<<"$scenario")
+
+cfg=$(mktemp -d)
+# Everything this check starts carries FALAK_CHECK=$cfg; on exit, end any of
+# it still running (a headless quickshell can outlive its launcher's timeout).
+cleanup() {
+  for pid in $(pgrep -u "$(id -u)"); do
+    { tr '\0' '\n' < "/proc/$pid/environ" | grep -qx "FALAK_CHECK=$cfg" && kill "$pid"; } 2>/dev/null
+  done
+  rm -rf "$cfg"
+}
+trap cleanup EXIT
+ln -s "${OMARCHY_PATH:-/usr/share/omarchy}/shell/Commons" "$cfg/Commons"
+ln -s "${OMARCHY_PATH:-/usr/share/omarchy}/shell/Ui" "$cfg/Ui"
+ln -s "$here/.." "$cfg/plugin"
+cp "$here/shell.qml" "$cfg/shell.qml"
+
+# To a file, not a pipe: a leftover process holding a pipe would block the read.
+env -u WAYLAND_DISPLAY -u DISPLAY -u HYPRLAND_INSTANCE_SIGNATURE \
+  QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME= QT_QUICK_BACKEND=software FALAK_CHECK="$cfg" \
+  ${tz:+TZ=$tz} FALAK_SCENARIO="$scenario" FALAK_OUT="$out" \
+  timeout 30 qs -n -p "$cfg" > "$cfg/qs.log" 2>&1 || true
+log=$(cat "$cfg/qs.log")
+
+# Surface QML problems; a silent blank PNG is the failure this exists to catch.
+grep -E 'WARN|ERROR|falak-' <<<"$log" | grep -v -E 'window masks|portal' || true
+grep -q 'falak-render ok' <<<"$log"

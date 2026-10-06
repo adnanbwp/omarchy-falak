@@ -1,0 +1,18 @@
+{
+  "_source": "NASA GSFC eclipse decade tables, eclipse.gsfc.nasa.gov/LEdecade/LEdecade2021.html and SEdecade/SEdecade2021.html, fetched 2026-10-06. Times are TD (TT).",
+  "lunar": [
+    { "date": "2026-03-03", "maxTD": "11:34:52", "type": "total", "umbral": 1.151, "partialMin": 207, "totalMin": 58 },
+    { "date": "2026-08-28", "maxTD": "04:14:04", "type": "partial", "umbral": 0.930, "partialMin": 198 },
+    { "date": "2027-02-20", "maxTD": "23:14:06", "type": "penumbral", "umbral": -0.057 },
+    { "date": "2027-07-18", "maxTD": "16:04:09", "type": "penumbral", "umbral": -1.068 },
+    { "date": "2027-08-17", "maxTD": "07:14:59", "type": "penumbral", "umbral": -0.525 },
+    { "date": "2028-01-12", "maxTD": "04:14:13", "type": "partial", "umbral": 0.066, "partialMin": 56 },
+    { "date": "2028-07-06", "maxTD": "18:20:57", "type": "partial", "umbral": 0.389, "partialMin": 141 },
+    { "date": "2028-12-31", "maxTD": "16:53:15", "type": "total", "umbral": 1.246, "partialMin": 209, "totalMin": 71 }
+  ],
+  "solar": [
+    { "name": "Luxor", "lat": 25.687, "lon": 32.639, "date": "2027-08-02", "type": "total", "note": "path of totality; NASA central duration at greatest eclipse 6m23s" },
+    { "name": "Sydney", "lat": -33.87, "lon": 151.21, "date": "2028-07-22", "type": "total", "note": "Total: Australia, N.Z." },
+    { "name": "Melbourne", "lat": -37.81, "lon": 144.96, "date": "2028-07-22", "type": "partial", "note": "outside the path" }
+  ]
+}

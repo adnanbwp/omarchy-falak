@@ -1,0 +1,17 @@
+{"_source":"api.aladhan.com/v1/timings method=15 (Moonsighting Committee Worldwide), shafaq=general, public city coordinates, fetched 2026-10-06. Fajr and Isha only: Aladhan adds no Dhuhr/Maghrib minutes, moonsighting.com does (+5/+3).","places":[
+{"name":"London","lat":51.5074,"lon":-0.1278,"tz":"Europe/London","date":"21-06-2026","timings":{"Fajr":"02:43","Sunrise":"04:43","Isha":"22:42"}}
+,{"name":"London","lat":51.5074,"lon":-0.1278,"tz":"Europe/London","date":"21-12-2026","timings":{"Fajr":"06:22","Sunrise":"08:04","Isha":"17:32"}}
+,{"name":"London","lat":51.5074,"lon":-0.1278,"tz":"Europe/London","date":"20-03-2026","timings":{"Fajr":"04:30","Sunrise":"06:03","Isha":"19:31"}}
+,{"name":"London","lat":51.5074,"lon":-0.1278,"tz":"Europe/London","date":"22-09-2026","timings":{"Fajr":"05:13","Sunrise":"06:46","Isha":"20:16"}}
+,{"name":"London","lat":51.5074,"lon":-0.1278,"tz":"Europe/London","date":"06-02-2027","timings":{"Fajr":"05:54","Sunrise":"07:31","Isha":"18:27"}}
+,{"name":"Edinburgh","lat":55.9533,"lon":-3.1883,"tz":"Europe/London","date":"21-06-2026","timings":{"Fajr":"02:22","Sunrise":"04:26","Isha":"23:24"}}
+,{"name":"Edinburgh","lat":55.9533,"lon":-3.1883,"tz":"Europe/London","date":"21-12-2026","timings":{"Fajr":"06:58","Sunrise":"08:42","Isha":"17:21"}}
+,{"name":"Edinburgh","lat":55.9533,"lon":-3.1883,"tz":"Europe/London","date":"20-03-2026","timings":{"Fajr":"04:40","Sunrise":"06:15","Isha":"19:44"}}
+,{"name":"Edinburgh","lat":55.9533,"lon":-3.1883,"tz":"Europe/London","date":"22-09-2026","timings":{"Fajr":"05:23","Sunrise":"06:58","Isha":"20:29"}}
+,{"name":"Edinburgh","lat":55.9533,"lon":-3.1883,"tz":"Europe/London","date":"06-02-2027","timings":{"Fajr":"06:19","Sunrise":"07:58","Isha":"18:25"}}
+,{"name":"Melbourne","lat":-37.8136,"lon":144.9631,"tz":"Australia/Melbourne","date":"21-06-2026","timings":{"Fajr":"06:01","Sunrise":"07:36","Isha":"18:40"}}
+,{"name":"Melbourne","lat":-37.8136,"lon":144.9631,"tz":"Australia/Melbourne","date":"21-12-2026","timings":{"Fajr":"04:06","Sunrise":"05:54","Isha":"22:01"}}
+,{"name":"Melbourne","lat":-37.8136,"lon":144.9631,"tz":"Australia/Melbourne","date":"20-03-2026","timings":{"Fajr":"05:54","Sunrise":"07:23","Isha":"20:48"}}
+,{"name":"Melbourne","lat":-37.8136,"lon":144.9631,"tz":"Australia/Melbourne","date":"22-09-2026","timings":{"Fajr":"04:41","Sunrise":"06:10","Isha":"19:32"}}
+,{"name":"Melbourne","lat":-37.8136,"lon":144.9631,"tz":"Australia/Melbourne","date":"06-02-2027","timings":{"Fajr":"05:02","Sunrise":"06:39","Isha":"21:38"}}
+]}

@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# Falak's prayer focus: quiet the desktop for a few minutes at prayer time.
+#
+#   falak-focus begin <minutes>   Do Not Disturb on, pause playing media, restore after
+#   falak-focus end               restore now: only what begin changed
+#   falak-focus check             restore if the time is up (run when the shell starts,
+#                                 so a restart can never leave Do Not Disturb stuck on)
+#
+# What begin changed is recorded in $XDG_RUNTIME_DIR/falak/focus: "until <epoch>",
+# "dnd" if it turned Do Not Disturb on, and one "player <bus name>" per paused player.
+set -uo pipefail
+dir="${XDG_RUNTIME_DIR:-/tmp}/falak"
+marker="$dir/focus"
+mpris=/org/mpris/MediaPlayer2
+
+players() {
+  gdbus call --session --dest org.freedesktop.DBus --object-path /org/freedesktop/DBus \
+    --method org.freedesktop.DBus.ListNames 2>/dev/null | grep -oE "org\.mpris\.MediaPlayer2\.[A-Za-z0-9_.-]+"
+}
+status() {
+  gdbus call --session --dest "$1" --object-path $mpris --method org.freedesktop.DBus.Properties.Get \
+    org.mpris.MediaPlayer2.Player PlaybackStatus 2>/dev/null | grep -oE "Playing|Paused|Stopped"
+}
+player() { gdbus call --session --dest "$1" --object-path $mpris --method "org.mpris.MediaPlayer2.Player.$2" >/dev/null 2>&1; }
+
+end() {
+  [[ -f $marker ]] || return 0
+  mv "$marker" "$marker.ending" 2>/dev/null || return 0      # one restorer only
+  grep -q '^dnd$' "$marker.ending" && [[ $(omarchy-shell -q notifications dndState 2>/dev/null) == on ]] &&
+    omarchy-shell -q notifications setDnd off >/dev/null
+  grep '^player ' "$marker.ending" | while read -r _ name; do player "$name" Play; done
+  rm -f "$marker.ending"
+}
+
+case "${1:-}" in
+begin)
+  minutes=${2:-15}
+  [[ $minutes =~ ^[0-9]+$ ]] && (( minutes > 0 && minutes <= 120 )) || { echo "minutes: 1-120" >&2; exit 2; }
+  mkdir -p "$dir"
+  [[ -f $marker ]] && exit 0                                  # already focused
+  until=$(( $(date +%s) + minutes * 60 ))
+  {
+    echo "until $until"
+    if [[ $(omarchy-shell -q notifications dndState 2>/dev/null) != on ]]; then
+      omarchy-shell -q notifications setDnd on >/dev/null && echo dnd
+    fi
+    for p in $(players); do
+      if [[ $(status "$p") == Playing ]] && player "$p" Pause; then echo "player $p"; fi
+    done
+  } > "$marker.new"
+  mv "$marker.new" "$marker"
+  # Restore when the time is up; a shell restart is covered by `check`.
+  setsid -f sh -c 'sleep "$1"; exec "$2" check' falak-focus $(( minutes * 60 )) "$(realpath "$0")" >/dev/null 2>&1
+  ;;
+end) end ;;
+check)
+  [[ -f $marker ]] || exit 0
+  until=$(awk '$1 == "until" { print $2 }' "$marker")
+  (( $(date +%s) >= ${until:-0} )) && end
+  ;;
+*) echo "usage: falak-focus begin <minutes> | end | check" >&2; exit 2 ;;
+esac
+exit 0
