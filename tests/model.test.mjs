@@ -386,6 +386,12 @@ const lmap = model.eclipseMap(model.lunarEclipseAt(model.fullMoonNear(Date.UTC(2
 assert.equal(lmap.rows[Math.floor((90 + 37.8) / 3)][Math.floor((145 + 180) / 3)], "2", "3 Mar 2026: the moon up over Melbourne")
 assert.equal(lmap.rows[Math.floor((90 - 51.5) / 3)][Math.floor(180 / 3)], "0", "and not over London")
 
+// The du'a after the adhan: on by default, off when turned off, and the text is Bukhari 614's.
+assert.equal(model.alertSettings({}).dua, true)
+assert.equal(model.alertSettings({ dua: false }).dua, false)
+assert.match(model.DUA_AFTER_ADHAN.arabic, /^اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ/)
+assert.equal(model.DUA_AFTER_ADHAN.source, "Sahih al-Bukhari 614")
+
 // The eclipse alert: the 3 March 2026 total lunar eclipse, seen from Melbourne.
 const mar3 = model.lunarEclipseAt(model.fullMoonNear(Date.UTC(2026, 2, 3, 12)), LAT, LON)
 const eclEvs = model.alertEvents(mar3.partialStart - 3600000, { name: "Melbourne", latitude: LAT, longitude: LON }, kalOpts, { enabled: true }, 0, [mar3])

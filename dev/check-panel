@@ -121,7 +121,8 @@ log=$(cat "$cfg/qs.log")
 grep -E 'WARN|ERROR|falak-panel' <<<"$log" | grep -v -E 'window masks|portal' || true
 grep -q 'falak-panel' <<<"$log"
 # "Test now" reaches falak-alert with a real adhan file and the volume.
-grep -E '^fire test-[0-9]+ Falak test .* /.*/assets/adhans/[a-z-]+\.ogg [0-9]+$' "$cfg/alert.log" >/dev/null \
+# ...and with the du'a after the adhan (on by default).
+grep -E '^fire test-[0-9]+ Falak test .* /.*/assets/adhans/[a-z-]+\.ogg [0-9]+ اللَّهُمَّ' "$cfg/alert.log" >/dev/null \
   || { echo "FAIL: test alert did not reach falak-alert as expected:" >&2; cat "$cfg/alert.log" >&2; exit 1; }
 f=$(grep -oE '/[^ ]+/assets/adhans/[a-z-]+\.ogg' "$cfg/alert.log" | head -1); [[ -f $f ]] || { echo "FAIL: no such adhan file $f" >&2; exit 1; }
 for want in '"n opens the crescent:true,searching:false"' '"calendar enter:true"' '"journal off by default:true"' '"teach:true"' '"adjust:true"' '"tasbih:true"' '"help:true"' '"sky:true"' '"sky closed:true"' '"eclipses:true"'; do

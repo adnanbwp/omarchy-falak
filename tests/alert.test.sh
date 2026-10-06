@@ -19,13 +19,25 @@ grep -q '^hook falak-prayer 2026-10-06-asr-start Asr 16:44$' "$FALAK_TEST_LOG" |
 before=$(lines); "$alert" fire 2026-10-06-asr-start "Asr" "16:44" "$sound" 80; wait
 [[ $(lines) == "$before" ]] || fail "second instance fired the same key"
 
+# The du'a after the adhan: sent when the adhan plays to the end...
+"$alert" fire 2026-10-06-dhuhr-start "Dhuhr" "13:08" "$sound" 80 "اللَّهُمَّ رَبَّ test-dua"; wait
+grep -q "notify .*Du'a after the adhan اللَّهُمَّ رَبَّ test-dua" "$FALAK_TEST_LOG" || fail "du'a after a full adhan"
+# ...not when it was stopped, and not without the setting.
+FALAK_TEST_PLAY_SECONDS=30 "$alert" fire 2026-10-06-dhuhr-stopped "Dhuhr" "13:08" "$sound" 80 "stopped-dua" &
+for _ in $(seq 50); do [[ -f $work/falak/adhan.pid ]] && break; sleep 0.1; done
+"$alert" stop; wait
+grep -q "stopped-dua" "$FALAK_TEST_LOG" && fail "du'a after a stopped adhan"
+"$alert" fire 2026-10-06-dhuhr-nodua "Dhuhr" "13:08" "$sound" 80; wait
+[[ $(grep -c "Du'a after the adhan" "$FALAK_TEST_LOG") == 1 ]] || fail "du'a without the setting"
+
+plays=$(grep -c pw-play "$FALAK_TEST_LOG")
 FALAK_TEST_DND=on "$alert" fire 2026-10-06-maghrib-start "Maghrib" "19:29" "$sound" 80
 grep -q 'notify .*Maghrib.*silent: Do Not Disturb is on' "$FALAK_TEST_LOG" || fail "DND notice"
-[[ $(grep -c pw-play "$FALAK_TEST_LOG") == 1 ]] || fail "played during DND"
+[[ $(grep -c pw-play "$FALAK_TEST_LOG") == "$plays" ]] || fail "played during DND"
 
 FALAK_TEST_RECORDING=1 "$alert" fire 2026-10-06-isha-start "Isha" "20:53" "$sound" 80
 grep -q 'silent: a screen recording is running' "$FALAK_TEST_LOG" || fail "recording notice"
-[[ $(grep -c pw-play "$FALAK_TEST_LOG") == 1 ]] || fail "played while recording"
+[[ $(grep -c pw-play "$FALAK_TEST_LOG") == "$plays" ]] || fail "played while recording"
 
 FALAK_TEST_PLAY_SECONDS=30 "$alert" fire 2026-10-07-fajr-start "Fajr" "05:18" "$sound" 50 &
 for _ in $(seq 50); do [[ -f $work/falak/adhan.pid ]] && break; sleep 0.1; done

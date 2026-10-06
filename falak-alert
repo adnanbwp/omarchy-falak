@@ -52,10 +52,10 @@ preview)
   exit 0
   ;;
 fire) ;;
-*) echo "usage: falak-alert fire <key> <headline> <body> [sound] [volume] | preview <sound> [volume] | stop" >&2; exit 2 ;;
+*) echo "usage: falak-alert fire <key> <headline> <body> [sound] [volume] [dua] | preview <sound> [volume] | stop" >&2; exit 2 ;;
 esac
 
-key=${2:?key}; headline=${3:?headline}; body=${4:-}; sound=${5:-}; volume=${6:-80}
+key=${2:?key}; headline=${3:?headline}; body=${4:-}; sound=${5:-}; volume=${6:-80}; dua=${7:-}
 [[ $key =~ ^[A-Za-z0-9._-]+$ ]] || { echo "bad key: $key" >&2; exit 2; }
 
 mkdir -p "$dir/fired"
@@ -76,8 +76,12 @@ if [[ -n $sound && -z $quiet && -f $sound ]]; then
   pw-play --volume "$(vol "$volume")" "$sound" &
   player=$!
   echo $player > "$pidfile"
-  wait $player
+  wait $player; played=$?
   forget $player
+  # The du'a after the adhan, only if it played to the end (not stopped).
+  if (( played == 0 )) && [[ -n $dua ]]; then
+    omarchy-notification-send --app-name Falak -g "󰖙" -u normal "Du'a after the adhan" "$dua" >/dev/null 2>&1
+  fi
 else
   omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$headline" "$body${quiet:+ (silent: $quiet)}" >/dev/null 2>&1
 fi

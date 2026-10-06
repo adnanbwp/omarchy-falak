@@ -225,6 +225,7 @@ Item {
       { field: "sound", label: "Adhan", options: adhans, cycle: true, hint: "space: listen" },
       { field: "fajrSound", label: "Fajr adhan", options: adhans, cycle: true, hint: "space: listen" },
       { field: "volume", label: "Volume", options: [[25, "25%"], [50, "50%"], [75, "75%"], [80, "80%"], [100, "100%"]] },
+      { field: "dua", label: "Du'a after the adhan", options: [[false, "Off"], [true, "On"]] },
       { field: "test", label: "Test now", actions: [["Fire a test alert", "test"], ["Stop sound", "stop"]] },
       { field: "folder", label: "Your own recordings", actions: [["Open my adhans folder", "folder"]] }
     ]
@@ -376,6 +377,14 @@ Item {
   // The half hour after iftar, today only: the dua.
   readonly property bool iftarHour: viewingToday && !!ramadan && ramadan.phase === "night"
     && now >= ramadan.fastEnd && now - ramadan.fastEnd < 30 * 60000
+  // The first ten minutes of a prayer, today only: the du'a after the adhan.
+  readonly property bool afterAdhan: {
+    if (!viewingToday || !today || iftarHour || (alerts && alerts.dua === false)) return false
+    var keys = ["fajr", "dhuhr", "asr", "maghrib", "isha"]
+    for (var i = 0; i < keys.length; i++)
+      if (today[keys[i]] !== null && now >= today[keys[i]] && now - today[keys[i]] < 10 * 60000) return true
+    return false
+  }
   readonly property var windows: location ? Model.prayerWindows(viewNoon, lat, lon, opts) : null
   readonly property var qiblaSun: location ? Model.qiblaSun(viewNoon, lat, lon, zone) : null
   // Once a day, not once a second: the year-long search is the costliest sum here.
@@ -830,6 +839,31 @@ Item {
           font.family: root.family
           font.pixelSize: Style.font.caption
         }
+      }
+    }
+
+    // The du'a after the adhan, for a prayer's first ten minutes.
+    Column {
+      visible: root.afterAdhan && !root.overlayOpen
+      width: parent.width
+      spacing: Style.space(3)
+      Text {
+        width: parent.width
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+        text: Model.DUA_AFTER_ADHAN.arabic
+        color: root.fg
+        font.family: "Noto Naskh Arabic"
+        font.pixelSize: Style.font.heading
+      }
+      Text {
+        width: parent.width
+        horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
+        text: Model.DUA_AFTER_ADHAN.english + " (" + Model.DUA_AFTER_ADHAN.source + ")"
+        color: root.dim
+        font.family: root.family
+        font.pixelSize: Style.font.caption
       }
     }
 

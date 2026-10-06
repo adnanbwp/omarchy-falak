@@ -971,7 +971,15 @@ var DEFAULT_ALERTS = {
   focus: 0,           // prayer focus: minutes of Do Not Disturb and paused media from each start; 0: off        // Surah al-Kahf reminder: "off", "thursday" (after Maghrib) or "friday" (2 h before Jumu'ah)
   sound: "makkah",
   fajrSound: "fajr-ali-mulla",
-  volume: 80
+  volume: 80,
+  dua: true           // the du'a after the adhan: a notification when one plays to the end, and in the panel
+}
+
+// The du'a after the adhan (Sahih al-Bukhari 614). The English is our own plain rendering.
+var DUA_AFTER_ADHAN = {
+  arabic: "اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ، وَالصَّلَاةِ الْقَائِمَةِ، آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ، وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ",
+  english: "O Allah, Lord of this perfect call and of the prayer about to begin, grant Muhammad al-Wasilah and excellence, and raise him to the praised station You promised him.",
+  source: "Sahih al-Bukhari 614"
 }
 // Fajr ones include "as-salatu khayrun min an-nawm"; any can be chosen for either.
 var ADHANS = [

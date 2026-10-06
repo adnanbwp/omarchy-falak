@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Like pw-play: takes a moment to wind down after SIGTERM.
+# Like pw-play: takes a moment to wind down after SIGTERM, then exits 1 (0 only at the end of the file).
 echo "pw-play $*" >> "$FALAK_TEST_LOG"
-trap 'sleep 0.4; exit 0' TERM
+trap 'sleep 0.4; exit 1' TERM
 sleep "${FALAK_TEST_PLAY_SECONDS:-0.1}" &
 wait $!

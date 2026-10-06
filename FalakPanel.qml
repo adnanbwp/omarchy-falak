@@ -291,7 +291,8 @@ Panel {
     for (var k in fired) f[k] = fired[k]
     f[e.key] = true
     fired = f
-    Quickshell.execDetached([pluginDir + "/falak-alert", "fire", e.key, e.headline, e.body, soundPath(e.sound), String(alerts.volume)])
+    var dua = e.sound && alerts.dua !== false ? Model.DUA_AFTER_ADHAN.arabic + "\n" + Model.DUA_AFTER_ADHAN.english + " (" + Model.DUA_AFTER_ADHAN.source + ")" : ""
+    Quickshell.execDetached([pluginDir + "/falak-alert", "fire", e.key, e.headline, e.body, soundPath(e.sound), String(alerts.volume), dua])
     // Prayer focus, a moment later so the prayer's own notification shows first.
     if (e.kind === "start" && e.key.indexOf("-sunrise-") < 0 && alerts.focus > 0)
       Quickshell.execDetached(["sh", "-c", 'sleep 3; exec "$1" begin "$2"', "falak-focus", pluginDir + "/falak-focus", String(alerts.focus)])
