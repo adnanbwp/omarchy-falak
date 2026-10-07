@@ -20,8 +20,11 @@ before=$(lines); "$alert" fire 2026-10-06-asr-start "Asr" "16:44" "$sound" 80; w
 [[ $(lines) == "$before" ]] || fail "second instance fired the same key"
 
 # The du'a after the adhan: sent when the adhan plays to the end...
-"$alert" fire 2026-10-06-dhuhr-start "Dhuhr" "13:08" "$sound" 80 "اللَّهُمَّ رَبَّ test-dua"; wait
-grep -q "notify .*Du'a after the adhan اللَّهُمَّ رَبَّ test-dua" "$FALAK_TEST_LOG" || fail "du'a after a full adhan"
+"$alert" fire 2026-10-06-dhuhr-start "Dhuhr" "13:08" "$sound" 80 "اللَّهُمَّ رَبَّ test-dua" "O Allah, test-head," "test-tail (Bukhari)"; wait
+grep -q "notify .*-t 30000 Du'a after the adhan اللَّهُمَّ رَبَّ test-dua" "$FALAK_TEST_LOG" || fail "du'a after a full adhan, up for 30 s"
+grep -q "notify .*-t 30000 O Allah, test-head, test-tail (Bukhari)" "$FALAK_TEST_LOG" || fail "the du'a's English card, up for 30 s"
+# English first, so the Arabic (newer) stacks on top.
+[[ $(grep -n "test-head\|test-dua" "$FALAK_TEST_LOG" | grep -o "test-head\|test-dua" | tr '\n' ' ') == "test-head test-dua " ]] || fail "du'a cards out of order"
 # ...not when it was stopped, and not without the setting.
 FALAK_TEST_PLAY_SECONDS=30 "$alert" fire 2026-10-06-dhuhr-stopped "Dhuhr" "13:08" "$sound" 80 "stopped-dua" &
 for _ in $(seq 50); do [[ -f $work/falak/adhan.pid ]] && break; sleep 0.1; done

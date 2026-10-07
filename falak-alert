@@ -52,10 +52,11 @@ preview)
   exit 0
   ;;
 fire) ;;
-*) echo "usage: falak-alert fire <key> <headline> <body> [sound] [volume] [dua] | preview <sound> [volume] | stop" >&2; exit 2 ;;
+*) echo "usage: falak-alert fire <key> <headline> <body> [sound] [volume] [dua english-head english-tail] | preview <sound> [volume] | stop" >&2; exit 2 ;;
 esac
 
-key=${2:?key}; headline=${3:?headline}; body=${4:-}; sound=${5:-}; volume=${6:-80}; dua=${7:-}
+key=${2:?key}; headline=${3:?headline}; body=${4:-}; sound=${5:-}; volume=${6:-80}
+dua=${7:-} dua_head=${8:-} dua_tail=${9:-}     # the du'a: Arabic, then the English in two parts
 [[ $key =~ ^[A-Za-z0-9._-]+$ ]] || { echo "bad key: $key" >&2; exit 2; }
 
 mkdir -p "$dir/fired"
@@ -79,8 +80,12 @@ if [[ -n $sound && -z $quiet && -f $sound ]]; then
   wait $player; played=$?
   forget $player
   # The du'a after the adhan, only if it played to the end (not stopped).
+  # Two cards, as a card's body shows only three lines: the English (its title and
+  # body), then the Arabic, which Omarchy stacks on top as the newer one.
   if (( played == 0 )) && [[ -n $dua ]]; then
-    omarchy-notification-send --app-name Falak -g "󰖙" -u normal "Du'a after the adhan" "$dua" >/dev/null 2>&1
+    # 30 s, the longest Omarchy keeps a card up (8 s by default): time to read it.
+    [[ -n $dua_head ]] && omarchy-notification-send --app-name Falak -g "󰖙" -u normal -t 30000 "$dua_head" "$dua_tail" >/dev/null 2>&1 && sleep 0.3
+    omarchy-notification-send --app-name Falak -g "󰖙" -u normal -t 30000 "Du'a after the adhan" "$dua" >/dev/null 2>&1
   fi
 else
   omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$headline" "$body${quiet:+ (silent: $quiet)}" >/dev/null 2>&1

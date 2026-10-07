@@ -979,6 +979,10 @@ var DEFAULT_ALERTS = {
 var DUA_AFTER_ADHAN = {
   arabic: "اللَّهُمَّ رَبَّ هَذِهِ الدَّعْوَةِ التَّامَّةِ، وَالصَّلَاةِ الْقَائِمَةِ، آتِ مُحَمَّدًا الْوَسِيلَةَ وَالْفَضِيلَةَ، وَابْعَثْهُ مَقَامًا مَحْمُودًا الَّذِي وَعَدْتَهُ",
   english: "O Allah, Lord of this perfect call and of the prayer about to begin, grant Muhammad al-Wasilah and excellence, and raise him to the praised station You promised him.",
+  // Omarchy's notification card shows a 2-line title and a 3-line body: the
+  // English fits only split across a card's title and body.
+  englishHead: "O Allah, Lord of this perfect call and of the prayer about to begin,",
+  englishTail: "grant Muhammad al-Wasilah and excellence, and raise him to the praised station You promised him.",
   source: "Sahih al-Bukhari 614"
 }
 // Fajr ones include "as-salatu khayrun min an-nawm"; any can be chosen for either.
