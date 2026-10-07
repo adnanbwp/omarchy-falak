@@ -83,8 +83,9 @@ if [[ -n $sound && -z $quiet && -f $sound ]]; then
   # Two cards, as a card's body shows only three lines: the English (its title and
   # body), then the Arabic, which Omarchy stacks on top as the newer one.
   if (( played == 0 )) && [[ -n $dua ]]; then
-    [[ -n $dua_head ]] && omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$dua_head" "$dua_tail" >/dev/null 2>&1 && sleep 0.3
-    omarchy-notification-send --app-name Falak -g "󰖙" -u normal "Du'a after the adhan" "$dua" >/dev/null 2>&1
+    # 30 s, the longest Omarchy keeps a card up (8 s by default): time to read it.
+    [[ -n $dua_head ]] && omarchy-notification-send --app-name Falak -g "󰖙" -u normal -t 30000 "$dua_head" "$dua_tail" >/dev/null 2>&1 && sleep 0.3
+    omarchy-notification-send --app-name Falak -g "󰖙" -u normal -t 30000 "Du'a after the adhan" "$dua" >/dev/null 2>&1
   fi
 else
   omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$headline" "$body${quiet:+ (silent: $quiet)}" >/dev/null 2>&1

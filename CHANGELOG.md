@@ -4,7 +4,7 @@
 
 ## 2.1.0 (2026-10-06)
 
-- The du'a after the adhan (Sahih al-Bukhari 614), in Arabic and English: two notifications (the Arabic on top, the English below, each within the card's line limit) when an adhan plays to the end (not when you stop it), and in the panel for each prayer's first ten minutes. "Du'a after the adhan" in the alert settings turns it off.
+- The du'a after the adhan (Sahih al-Bukhari 614), in Arabic and English: two notifications (the Arabic on top, the English below, each within the card's line limit, on screen for 30 seconds) when an adhan plays to the end (not when you stop it), and in the panel for each prayer's first ten minutes. "Du'a after the adhan" in the alert settings turns it off.
 
 - Stop only stops a player: a pidfile naming any other process (a reused pid) is ignored, and the runtime files live only in the per-user `$XDG_RUNTIME_DIR`, never a shared `/tmp`.
 - Do Not Disturb works with Falak: the adhan stays silent while it is on, and prayer focus turns it back off when it ends. Both read the state with `omarchy-shell -q`, which prints nothing, so neither ever saw it.
