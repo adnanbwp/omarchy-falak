@@ -83,9 +83,20 @@ if [[ -n $sound && -z $quiet && -f $sound ]]; then
   # Two cards, as a card's body shows only three lines: the English (its title and
   # body), then the Arabic, which Omarchy stacks on top as the newer one.
   if (( played == 0 )) && [[ -n $dua ]]; then
+    # Prayer focus turns Do Not Disturb on seconds into the adhan. It holds other
+    # notifications, not the du'a: lift it just to send the cards (Omarchy checks DND
+    # on arrival, so they stay up), then put it back. DND the user turned on stays.
+    lifted=""
+    grep -qx dnd "$dir/focus" 2>/dev/null && [[ $(omarchy-shell notifications dndState 2>/dev/null) == on ]] &&
+      omarchy-shell -q notifications setDnd off >/dev/null && lifted=1
     # 30 s, the longest Omarchy keeps a card up (8 s by default): time to read it.
     [[ -n $dua_head ]] && omarchy-notification-send --app-name Falak -g "󰖙" -u normal -t 30000 "$dua_head" "$dua_tail" >/dev/null 2>&1 && sleep 0.3
     omarchy-notification-send --app-name Falak -g "󰖙" -u normal -t 30000 "Du'a after the adhan" "$dua" >/dev/null 2>&1
+    # ponytail: anything else arriving in this ~0.6 s gap shows too; a DND bypass for Falak would need Omarchy upstream.
+    # Only if focus is still on: its end may have run meanwhile and must stay off.
+    if [[ -n $lifted ]]; then
+      sleep 0.3; grep -qx dnd "$dir/focus" 2>/dev/null && omarchy-shell -q notifications setDnd on >/dev/null
+    fi
   fi
 else
   omarchy-notification-send --app-name Falak -g "󰖙" -u normal "$headline" "$body${quiet:+ (silent: $quiet)}" >/dev/null 2>&1

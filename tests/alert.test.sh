@@ -33,6 +33,23 @@ grep -q "stopped-dua" "$FALAK_TEST_LOG" && fail "du'a after a stopped adhan"
 "$alert" fire 2026-10-06-dhuhr-nodua "Dhuhr" "13:08" "$sound" 80; wait
 [[ $(grep -c "Du'a after the adhan" "$FALAK_TEST_LOG") == 1 ]] || fail "du'a without the setting"
 
+# Prayer focus turns Do Not Disturb on seconds into the adhan; the du'a is part
+# of the prayer, so it shows anyway, and DND is back on after it.
+export FALAK_TEST_DIR="$work"
+focus_fire() {  # <key> <dua> <focus marker>: DND off at the start, on mid-adhan, as falak-focus does
+  echo off > "$work/dnd"; rm -f "$work/falak/adhan.pid"
+  FALAK_TEST_PLAY_SECONDS=1 "$alert" fire "$1" "Asr" "16:44" "$sound" 80 "$2" "h" "t" &
+  for _ in $(seq 50); do [[ -f $work/falak/adhan.pid ]] && break; sleep 0.1; done
+  echo on > "$work/dnd"; printf '%b' "$3" > "$work/falak/focus"; wait
+}
+focus_fire 2026-10-06-asr-focus focus-dua 'until 9999999999\ndnd\n'
+grep -q "notify \[dnd off\] .*focus-dua" "$FALAK_TEST_LOG" || fail "du'a held by focus's own DND"
+[[ $(cat "$work/dnd") == on ]] || fail "focus DND not put back after the du'a"
+# DND the user turned on (focus did not record "dnd"): the du'a stays held.
+focus_fire 2026-10-06-asr-userdnd userdnd-dua 'until 9999999999\n'
+grep -q "notify \[dnd on\] .*userdnd-dua" "$FALAK_TEST_LOG" || fail "lifted DND the user turned on"
+rm -f "$work/falak/focus" "$work/dnd"; unset FALAK_TEST_DIR
+
 plays=$(grep -c pw-play "$FALAK_TEST_LOG")
 FALAK_TEST_DND=on "$alert" fire 2026-10-06-maghrib-start "Maghrib" "19:29" "$sound" 80
 grep -q 'notify .*Maghrib.*silent: Do Not Disturb is on' "$FALAK_TEST_LOG" || fail "DND notice"

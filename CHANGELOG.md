@@ -2,6 +2,10 @@
 
 `omarchy plugin update` installs the latest `main`. The version numbers just label what changed.
 
+## Unreleased
+
+- The du'a after the adhan shows with prayer focus on. Focus turns Do Not Disturb on a few seconds into the adhan, which silenced the du'a cards. Falak now turns it off just long enough to send them, then back on. If you turned Do Not Disturb on yourself, it's left alone and the du'a goes to history as before.
+
 ## 2.1.0 (2026-10-06)
 
 - The du'a after the adhan (Sahih al-Bukhari 614), in Arabic and English: two notifications (the Arabic on top, the English below, each within the card's line limit, on screen for 30 seconds) when an adhan plays to the end (not when you stop it), and in the panel for each prayer's first ten minutes. "Du'a after the adhan" in the alert settings turns it off.
